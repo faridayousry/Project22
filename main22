@@ -29,9 +29,11 @@ bool swiTerminate =  false;
 #define    LR    Regs[14]
 #define SP  Regs[13]
 
-int CSPR;  //PSR (CPSR) program status register to use a flag/store the result of cmp instruction & other instr(such as branch)
+bool CSPR;  //PSR (CPSR) program status register to use a flag/store the result of cmp instruction & other instr(such as branch)
 bool carryBit =0;
 bool zflag = 0;
+bool nbit =0;
+bool vbit = 0;
 int regSize = 4;
 int Word = 4;
 
