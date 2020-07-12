@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include <iostream>
 #include <string>
+#include <fstream>
 using namespace std;
 
 //CARRY FLAG, lsl & lsr, why simulate returns int?????, output modified value, cspr flag, fseek for BRANCH, instr 14: rlist range
@@ -37,16 +38,14 @@ int Word = 4;
 int main() {
     FILE* fp;
     unsigned short inst_word;
+    fp = fopen("test2.bin", "r");
     
-    fp = fopen("test.s.bin", "rb");
-    
-    if (NULL == fp) {
+    if (fp == NULL) {
         printf("Cannot open the file\n");
         exit(0);
     }
-    
-    fread(&SP, 4, 1, fp);        //reading first 32-bits to set as the initial value for the stack pointer
-    fread(&PC, 4, 1, fp);        //reading second 32-bits to set as the initial value for the program counter
+        fread(&SP, 4, 1, fp);        //reading first 32-bits to set as the initial value for the stack pointer
+        fread(&PC, 4, 1, fp);        //reading second 32-bits to set as the initial value for the program counter
     
     while (fread(&inst_word, 2, 1, fp))
     {
@@ -97,7 +96,7 @@ void simulate(unsigned short instr, FILE *fp)
 {
     unsigned char fmt, op, offset5, rd, rs, offset3, rn;
     
-    fmt = (instr) >> 13;
+    fmt = (instr >> 13) & 0x7;
     
     switch (fmt)
     {
@@ -113,19 +112,19 @@ void simulate(unsigned short instr, FILE *fp)
                     case 0:
                         printf("lsl\tr%d, r%d, #%d\n", rd, rs, offset5);    //logical left shift instruction
                         Regs[rd] = (Regs[rs] << offset5);
-                        cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                        cout << "\n R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                         break;
                         
                     case 1:
                         printf("lsr\tr%d, r%d, #%d\n", rd, rs, offset5);     //logical right shift instruction
                         Regs[rd] = (Regs[rs] / (2^offset5));
-                        cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                        cout << "\n R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                         break;
                         
                     case 2:
                         printf("asr\tr%d, r%d, #%d\n", rd, rs, offset5);      //arithmetic right shift instruction
                         Regs[rd] = (Regs[rs] >> offset5);
-                        cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                        cout << "\n R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                         break;
                     default:
                         printf("UNKNOWN INSTR\n");
@@ -139,12 +138,12 @@ void simulate(unsigned short instr, FILE *fp)
                     if ((offset5 & 0x10) == 0) {          //check if the 'I' flag (immediate') is set:
                         printf("r%d\n", rn);                //if so -> add format: "ADD rd, rs, rn"
                         Regs[rd] = Regs[rs] + Regs[rn];         //update registers array
-                        cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                        cout << "\n R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                     }
                     else {                              //else if 'I' flag (immediate') is not set:
                         printf("#%d\n", offset3);           //-> add format: "ADD rd, rs, offset"
                         Regs[rd] = Regs[rs] + offset3;          //update registers array
-                        cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd];
+                        cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                     }
                 }
                 else {        //sub instruction
@@ -152,12 +151,12 @@ void simulate(unsigned short instr, FILE *fp)
                     if ((offset5 & 0x10) == 0) {           //check if the 'I' flag (immediate') is set:
                         printf("r%d\n", rn);                  //if so -> sub format: "SUB rd, rs, rn"
                         Regs[rd] = Regs[rs] - Regs[rn];          //update registers array
-                        cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                        cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                     }
                     else {
                         printf("#%d\n", offset3);          //else if 'I' flag (immediate') is not set: -> sub format: "SUB rd, rs, offset"
                         Regs[rd] = Regs[rs] - offset3;           //update registers array
-                        cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                        cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                     }
                 }
             }
@@ -250,13 +249,13 @@ void simulate(unsigned short instr, FILE *fp)
                         case 5:     //adc instruction (rd = rd + rs + carry flag)
                             printf("adc\tr%d, r%d\n", rd, rs);
                             Regs[rd] = Regs[rd] + Regs[rs] + carryBit;
-                            cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                            cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                             break;
                             
                         case 6:        //sbc instruction(rd = rd - rs - NOT c-bit)
                             printf("sbc\tr%d, r%d\n", rd, rs);
                             Regs[rd] = Regs[rd] - Regs[rs] - ~carryBit;
-                            cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                            cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                             break;
                             
                         case 7:{     //ror instruction (rd = rd ror rs)
@@ -271,7 +270,7 @@ void simulate(unsigned short instr, FILE *fp)
                                     carryFlag = 0;
                                 }
                             }
-                            cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                            cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                             break;
                         }
                             
@@ -283,7 +282,7 @@ void simulate(unsigned short instr, FILE *fp)
                         case 9:     //neg instruction (rd = rd >> rs)
                             printf("neg\tr%d, r%d\n", rd, rs);
                             Regs[rd] = -Regs[rs];
-                            cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                            cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                             break;
                             
                         case 10:        //cmp instruction (rd - rs)? 1:0)
@@ -302,25 +301,25 @@ void simulate(unsigned short instr, FILE *fp)
                         case 12:        //orr instruction(rd := rd or rs  [bitwise or])
                             printf("orr\tr%d, r%d\n", rd, rs);
                             Regs[rd] = Regs[rd] | Regs[rs];
-                            cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                            cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                             break;
                             
                         case 13:     //mul instruction (rd = rd * rs)
                             printf("mul\tr%d, r%d\n", rd, rs);
                             Regs[rd] = Regs[rd] * Regs[rs];
-                            cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                            cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                             break;
                             
                         case 14:        //bic instruction (rd = rd AND NOT rs)
                             printf("bic\tr%d, r%d\n", rd, rs);
                             Regs[rd] = Regs[rd] & (~Regs[rs]);     //set condition codes
-                            cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                            cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                             break;
                             
                         case 15:     //mvn instruction (rd = not rs)
                             printf("mvn\tr%d, r%d\n", rd, rs);
                             Regs[rd] = ~Regs[rs];                   //SHOULD IT BE 'NOT'/'NEG'/'¬'/'!'/'~' ??????????????????????
-                            cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                            cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                             break;
                             
                             //break;
@@ -330,18 +329,20 @@ void simulate(unsigned short instr, FILE *fp)
                 }
                 case 1:{     //format 6
                     rd = (instr >> 8) & 7;      //mask to get bits 8,9,10 (rd for format 6)
-                    int word8 = instr & 0x7f;     //mask to get 8 rightmost bits for immediate offset (Word8)
-                    int imm = word8 << 2;           //we shift word8 to the left to output the correct value of the immediate as the assembler has stored into word8 the immediate shifted to the right by 2
-                    printf("ldr\tr%d,  #%d\n", rd, imm);    //Load into Rd the word found at the address formed by adding PC + word8
-                    Regs[rd] = Mem[Regs[15] + word8];       //Rd = PC + word8
-                    Regs[rd] = (Regs[rd] << 8) | Mem[Regs[15] + word8 + 1];
-                    Regs[rd] = (Regs[rd] << 8) | Mem[Regs[15] + word8 + 2];
-                    Regs[rd] = (Regs[rd] << 8) | Mem[Regs[15] + word8 + 3];  //to get full word (4 bytes)
+                    int word8 = instr & 0xFF;     //mask to get 8 rightmost bits for immediate offset (Word8)
+                    //int imm = word8 << 2;           //we shift word8 to the left to output the correct value of the immediate as the assembler has stored into word8 the immediate shifted to the right by 2
+                    cout << "ldr\tR" << rd << ", {PC, " << word8 << "}" << endl;
+                    //Load into Rd the word found at the address formed by adding PC + word8
+                    Regs[rd] = 0;
+                    Regs[rd] = Regs[rd] | Mem[PC + (unsigned)word8];       //Rd = PC + word8
+                    Regs[rd] = Regs[rd] | (Mem[Regs[15] + (unsigned)word8 + 1] << 8);
+                    Regs[rd] = Regs[rd] | (Mem[Regs[15] + (unsigned)word8 + 2] << 16);
+                    Regs[rd] = Regs[rd] | (Mem[Regs[15] + (unsigned)word8 + 3] << 24);  //to get full word (4 bytes)
                     
                     PC += 4 ;  //increment PC by 4 bytes
                     PC = (PC >> 1) & 0xFFFFFFFE;  //bit  of PC forced to 0 to word-align
                     
-                    cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                    cout << "\tR" << rd << " \t: "<<Regs[rd];
                     break;
                 }
                 default:
@@ -386,7 +387,7 @@ void simulate(unsigned short instr, FILE *fp)
                         case 3:
                             cout << "ldrb\tR" << rd << ", [R" << rs << ", R" << ro << "]\n";
                             Regs[rd] = Mem[Regs[rs] + Regs[ro]];
-                            cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                            cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                             
                             break;
                         default:
@@ -432,13 +433,13 @@ void simulate(unsigned short instr, FILE *fp)
                     Regs[rd] = Regs[rd] | (Mem[Regs[rs] + offset5 + 1] << 8);
                     Regs[rd] = Regs[rd] | (Mem[Regs[rs] + offset5 + 2] << 16);
                     Regs[rd] = Regs[rd] | (Mem[Regs[rs] + offset5 + 3] << 24);
-                    cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                    cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                     
                     
                 case 3:
                     cout << "ldrb\trd,[rb,#" << offset5 << "]" << endl;
                     Regs[rd] = Mem[Regs[rs] + offset5];
-                    cout << "\n \t R" << rd << " has been modified to: "<<Regs[rd];
+                    cout << "\n \t R" << rd << " has beenmodified to: "<<Regs[rd] << endl;
                     break;
                     
                     // break;
@@ -526,25 +527,25 @@ void simulate(unsigned short instr, FILE *fp)
                         cout << Regs[0] << endl;
                         break;
                     case 0x02:
-                        //print string
-                        cout << swiString << endl;
-                        break;
-                    case 0x03:
                         //reading int
                         cout << "Enter string: ";
                         cin >> Regs[0];
                         break;
-                    case 0x04:
+                    case 0x03:
                         //reading char
                         cout << "Enter char: ";
                         cin >> swiChar;
                         break;
-                    case 0x05:
+                    case 0x04:
                         //reading string
                         cout << "Enter string: ";
                         cin >> swiString;
                         break;
-                    case 0x11:
+                    case 0x05:
+                        //print string
+                        cout << swiString << endl;
+                        break;
+                    case 0x06:
                         //terminate
                         swiTerminate = true;
                         break;
@@ -557,72 +558,72 @@ void simulate(unsigned short instr, FILE *fp)
                     case 0:
                         cout << "beq\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 1:
                         cout << "bne\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 2:
                         cout << "bcs\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 3:
                         cout << "bcc\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 4:
                         cout << "bmi\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 5:
                         cout << "bpl\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 6:
                         cout << "bvs\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 7:
                         cout << "bvc\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 8:
                         cout << "bhi\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 9:
                         cout << "bls\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 10:
                         cout << "bge\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 11:
                         cout << "blt\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 12:
                         cout << "bgt\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 13:
                         cout << "ble\tlabel" << v8 << endl;
                         PC = PC + Word;
-                        //fseek(fp, SEEK_SET, PC + 2);
+                        fseek(fp, SEEK_SET, PC + 2);
                         break;
                     case 14:
                         cout << "unidentified instruction" << endl;
