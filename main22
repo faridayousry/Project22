@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include <iostream>
+#include <string>
 using namespace std;
 
 //CARRY FLAG, lsl & lsr, why simulate returns int?????, output modified value, cspr flag, fseek for BRANCH, instr 14: rlist range
@@ -18,6 +19,10 @@ void regPrint(unsigned int RList, int& rCount);
 unsigned char Mem[1024];        //memory is 1024 bytes?
 unsigned int Regs[16];          //each register is 4 bytes?
 int carryFlag;
+
+char swiChar;
+string swiString;
+bool swiTerminate =  false;
 
 #define    PC    Regs[15]
 #define    LR    Regs[14]
@@ -45,7 +50,7 @@ int main() {
     
     while (fread(&inst_word, 2, 1, fp))
     {
-        if (inst_word == 0xDEAD)     //if terminator instruction is found -> terminate simulator
+        if (inst_word == 0xDEAD || swiTerminate == true)     //if terminator instruction is found -> terminate simulator
             return 0;
         
         printf("%08x\t%04x\t", PC, inst_word);
@@ -512,7 +517,40 @@ void simulate(unsigned short instr, FILE *fp)
             unsigned int v8 = instr & 0x00FF;
             if (cond == 15) {             // format 17
                 cout << "swi\t" << v8 << endl;
-                cout << Regs[0] << endl;
+                switch(v8){
+                    case 0x00:
+                        //print char
+                        cout << swiChar << endl;
+                        break;
+                    case 0x01:
+                        cout << Regs[0] << endl;
+                        break;
+                    case 0x02:
+                        //print string
+                        cout << swiString << endl;
+                        break;
+                    case 0x03:
+                        //reading int
+                        cout << "Enter string: ";
+                        cin >> Regs[0];
+                        break;
+                    case 0x04:
+                        //reading char
+                        cout << "Enter char: ";
+                        cin >> swiChar;
+                        break;
+                    case 0x05:
+                        //reading string
+                        cout << "Enter string: ";
+                        cin >> swiString;
+                        break;
+                    case 0x11:
+                        //terminate
+                        swiTerminate = true;
+                        break;
+                    default:
+                        printf("UNKNOWN INSTR\n");
+                }
             }
             else {                      // format 16
                 switch (cond) {
